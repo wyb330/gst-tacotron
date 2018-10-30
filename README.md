@@ -39,13 +39,13 @@ A tensorflow implementation of the [Style Tokens: Unsupervised Style Modeling, C
 2. **Preprocess the data**
     
    ```
-   python3 preprocess.py --dataset blizzard2013
+   python3 preprocess.py --dataset blizzard2013 --base_dir /path/to/data
    ```
 
 3. **Train a model**
 
    ```
-   python3 train.py
+   python3 train.py --base_dir /path/to/data
    ```
    
    The above command line will use default hyperparameters, which will train a model with cmudict-based phoneme sequence and 4-head multi-head sytle attention for global style tokens. If you set the `use_gst=False` in the hparams, it will train a model like Google's another paper [Towards End-to-End Prosody Transfer for Expressive Speech Synthesis with Tacotron](https://arxiv.org/abs/1803.09047).
