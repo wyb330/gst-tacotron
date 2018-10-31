@@ -68,7 +68,6 @@ def train(log_dir, args):
         stats = add_stats(model)
 
     # Bookkeeping:
-    step = 0
     time_window = ValueWindow(100)
     loss_window = ValueWindow(100)
     saver = tf.train.Saver(max_to_keep=5, keep_checkpoint_every_n_hours=2)
@@ -79,13 +78,17 @@ def train(log_dir, args):
             summary_writer = tf.summary.FileWriter(log_dir, sess.graph)
             sess.run(tf.global_variables_initializer())
 
-            if args.restore_step:
-                # Restore from a checkpoint if the user requested it.
-                restore_path = '%s-%d' % (checkpoint_path, args.restore_step)
-                saver.restore(sess, restore_path)
-                log('Resuming from checkpoint: %s at commit: %s' % (restore_path, commit), slack=True)
+            if args.restore_step > 0:
+                ckpt = '%s-%d' % (checkpoint_path, args.restore_step)
+            else:
+                ckpt = tf.train.latest_checkpoint(log_dir)
+
+            if ckpt:
+                log('Resuming from checkpoint: %s at commit: %s' % (ckpt, commit), slack=True)
+                saver.restore(sess, ckpt)
             else:
                 log('Starting new training run at commit: %s' % commit, slack=True)
+                sess.run(tf.global_variables_initializer())
 
             feeder.start_in_session(sess)
 
@@ -127,13 +130,13 @@ def train(log_dir, args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--base_dir', default='/home/deepai/voice')
+    parser.add_argument('--base_dir', default=os.getcwd())
     parser.add_argument('--input', default='training/train.txt')
     parser.add_argument('--model', default='tacotron')
     parser.add_argument('--name', help='Name of the run. Used for logging. Defaults to model name.')
     parser.add_argument('--hparams', default='',
                         help='Hyperparameter overrides as a comma-separated list of name=value pairs')
-    parser.add_argument('--restore_step', type=int, help='Global step to restore from checkpoint.')
+    parser.add_argument('--restore_step', default=0, type=int, help='Global step to restore from checkpoint.')
     parser.add_argument('--summary_interval', type=int, default=100,
                         help='Steps between running summary ops.')
     parser.add_argument('--checkpoint_interval', type=int, default=1000,

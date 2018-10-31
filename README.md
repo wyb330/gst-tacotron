@@ -39,13 +39,13 @@ A tensorflow implementation of the [Style Tokens: Unsupervised Style Modeling, C
 2. **Preprocess the data**
     
    ```
-   python3 preprocess.py --dataset blizzard2013 --base_dir /path/to/data
+   python preprocess.py --dataset blizzard2013 --base_dir /path/to/data
    ```
 
 3. **Train a model**
 
    ```
-   python3 train.py --base_dir /path/to/data
+   python train.py --base_dir /path/to/data
    ```
    
    The above command line will use default hyperparameters, which will train a model with cmudict-based phoneme sequence and 4-head multi-head sytle attention for global style tokens. If you set the `use_gst=False` in the hparams, it will train a model like Google's another paper [Towards End-to-End Prosody Transfer for Expressive Speech Synthesis with Tacotron](https://arxiv.org/abs/1803.09047).
@@ -55,7 +55,7 @@ A tensorflow implementation of the [Style Tokens: Unsupervised Style Modeling, C
 4. **Synthesize from a checkpoint**
 
    ```
-   python3 eval.py --checkpoint ~/tacotron/logs-tacotron/model.ckpt-185000 --text "hello text" --reference_audio /path/to/ref_audio
+   python eval.py --checkpoint ~/tacotron/logs-tacotron/model.ckpt-185000 --text "hello text" --reference_audio /path/to/ref_audio
    ```
 
     Replace "185000" with the checkpoint number that you want to use. Then this command line will synthesize a waveform with the content "hello text" and the style of the reference audio. If you don't use the `--reference_audio`, it will generate audio with random style weights, which may generate unintelligible audio sometimes. 
