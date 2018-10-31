@@ -39,7 +39,7 @@ A tensorflow implementation of the [Style Tokens: Unsupervised Style Modeling, C
 2. **Preprocess the data**
     
    ```
-   python preprocess.py --dataset blizzard2013 --base_dir /path/to/data
+   python preprocess.py --dataset vctk --base_dir /path/to/data
    ```
 
 3. **Train a model**

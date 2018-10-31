@@ -8,13 +8,19 @@ hparams = tf.contrib.training.HParams(
 
     # Audio:
     num_mels=80,
-    num_freq=1025,
-    sample_rate=16000,
+    num_freq=513,  # (= n_fft / 2 + 1) only used when adding linear spectrograms post processing network
+    sample_rate=22050,
     frame_length_ms=50,
-    frame_shift_ms=12.5,
     preemphasis=0.97,
     min_level_db=-100,
     ref_level_db=20,
+    clip_mels_length=False,  # For cases of OOM (Not really recommended, working on a workaround)
+
+    # Mel spectrogram
+    n_fft=1024,  # Extra window size is filled with 0 paddings to match this parameter
+    hop_size=256,  # For 22050Hz, 275 ~= 12.5 ms
+    win_size=None,  # For 22050Hz, 1100 ~= 50 ms (If None, win_size = n_fft)
+    frame_shift_ms=12.5,
 
     # Model:
     outputs_per_step=2,
@@ -49,6 +55,15 @@ hparams = tf.contrib.training.HParams(
     reference_depth=128,
     style_att_type="mlp_attention",  # Attention type for style attention module (dot_attention, mlp_attention)
     style_att_dim=128,
+
+    input_type="raw",
+    max_mel_frames=900,  # Only relevant when clip_mels_length = True
+    # Mel and Linear spectrograms normalization/scaling and clipping
+    signal_normalization=True,
+    allow_clipping_in_normalization=True,  # Only relevant if mel_normalization = True
+    symmetric_mels=True,  # Whether to scale the data to be symmetric around 0
+    max_abs_value=4.,  # max absolute value of data. If symmetric, data will be [-max, max] else [0, max]
+
 )
 
 
