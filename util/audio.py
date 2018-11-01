@@ -63,6 +63,18 @@ def melspectrogram(y):
     return _normalize(S)
 
 
+def inv_mel_spectrogram(mel_spectrogram):
+    '''Converts mel spectrogram to waveform using librosa'''
+    if hparams.signal_normalization:
+        D = _denormalize(mel_spectrogram)
+    else:
+        D = mel_spectrogram
+
+    S = _mel_to_linear(_db_to_amp(D + hparams.ref_level_db))  # Convert back to linear
+
+    return _griffin_lim(S ** hparams.power)
+
+
 def find_endpoint(wav, threshold_db=-40, min_silence_sec=0.8):
     window_length = int(hparams.sample_rate * min_silence_sec)
     hop_length = int(window_length / 4)
@@ -134,6 +146,7 @@ def _stft_parameters():
 # Conversions:
 
 _mel_basis = None
+_inv_mel_basis = None
 
 
 def _linear_to_mel(spectrogram):
@@ -141,6 +154,13 @@ def _linear_to_mel(spectrogram):
     if _mel_basis is None:
         _mel_basis = _build_mel_basis()
     return np.dot(_mel_basis, spectrogram)
+
+
+def _mel_to_linear(mel_spectrogram):
+    global _inv_mel_basis
+    if _inv_mel_basis is None:
+        _inv_mel_basis = np.linalg.pinv(_build_mel_basis())
+    return np.maximum(1e-10, np.dot(_inv_mel_basis, mel_spectrogram))
 
 
 def _build_mel_basis():

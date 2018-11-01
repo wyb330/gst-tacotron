@@ -218,15 +218,13 @@ class Tacotron2():
             hp = self._hparams
 
             # Compute loss of predictions before postnet
-            # before = tf.losses.mean_squared_error(self.mel_targets, self.decoder_output)
+            before = tf.losses.mean_squared_error(self.mel_targets, self.decoder_output)
             # Compute loss after postnet
             after = tf.losses.mean_squared_error(self.mel_targets, self.mel_outputs)
             # Compute <stop_token> loss (for learning dynamic generation stop)
             # stop_token_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
             #     labels=self.stop_token_targets,
             #     logits=self.stop_token_prediction))
-
-            linear_loss = 0.
 
             # Compute the regularization weight
             if hp.tacotron_scale_regularization:
@@ -241,13 +239,12 @@ class Tacotron2():
                                        if not ('bias' in v.name or 'Bias' in v.name)]) * reg_weight
 
             # Compute final loss term
-            # self.before_loss = before
+            self.before_loss = before
             self.mel_loss = after
             # self.stop_token_loss = stop_token_loss
             self.regularization_loss = regularization
-            self.linear_loss = linear_loss
 
-            self.loss = self.mel_loss + self.regularization_loss + self.linear_loss
+            self.loss = self.before_loss + self.mel_loss + self.regularization_loss
 
     def add_optimizer(self, global_step):
         '''Adds optimizer. Sets "gradients" and "optimize" fields. add_loss must have been called.

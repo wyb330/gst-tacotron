@@ -31,7 +31,7 @@ def add_stats(model):
         tf.summary.histogram('mel_outputs', model.mel_outputs)
         tf.summary.histogram('mel_targets', model.mel_targets)
         tf.summary.scalar('loss_mel', model.mel_loss)
-        tf.summary.scalar('loss_linear', model.linear_loss)
+        # tf.summary.scalar('loss_linear', model.linear_loss)
         tf.summary.scalar('learning_rate', model.learning_rate)
         tf.summary.scalar('loss', model.loss)
         # gradient_norms = [tf.norm(grad) for grad in model.gradients]
@@ -98,11 +98,11 @@ def train(log_dir, args):
 
             while not coord.should_stop():
                 start_time = time.time()
-                step, loss, opt = sess.run([global_step, model.loss, model.optimize])
+                step, loss, lr, opt = sess.run([global_step, model.loss, model.learning_rate, model.optimize])
                 time_window.append(time.time() - start_time)
                 loss_window.append(loss)
-                message = 'Step %-7d [%.03f sec/step, loss=%.05f, avg_loss=%.05f]' % (
-                    step, time_window.average, loss, loss_window.average)
+                message = 'Step %-7d [%.03f sec/step, loss=%.05f, avg_loss=%.05f, lr=%.05f]' % (
+                    step, time_window.average, loss, loss_window.average, lr)
                 log(message, slack=(step % args.checkpoint_interval == 0))
 
                 if loss > 100 or math.isnan(loss):
@@ -117,16 +117,18 @@ def train(log_dir, args):
                     log('Saving checkpoint to: %s-%d' % (checkpoint_path, step))
                     saver.save(sess, checkpoint_path, global_step=step)
                     log('Saving audio and alignment...')
-                    input_seq, spectrogram, alignment = sess.run([
-                        model.inputs[0], model.linear_outputs[0], model.alignments[0]])
-                    if args.model == 'tacotron2':
-                        waveform = audio.inv_linear_spectrogram(spectrogram.T)
-                    else:
-                        waveform = audio.inv_spectrogram(spectrogram.T)
+                    input_seq, spectrogram, target, alignment = sess.run([
+                        model.inputs[0], model.mel_outputs[0], model.mel_targets[0], model.alignments[0]])
+                    waveform = audio.inv_mel_spectrogram(spectrogram.T)
                     audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio.wav' % step))
                     plot.plot_alignment(alignment, os.path.join(log_dir, 'step-%d-align.png' % step),
                                         info='%s, %s, %s, step=%d, loss=%.5f' % (
                                         args.model, commit, time_string(), step, loss))
+                    plot.plot_spectrogram(spectrogram,
+                                          os.path.join(log_dir, 'step-{}-mel-spectrogram.png'.format(step)),
+                                          info='{}, {}, step={}, loss={:.5}'.format(args.model, time_string(), step,
+                                                                                    loss), target_spectrogram=target,
+                                          max_len=None)
                     log('Input: %s' % sequence_to_text(input_seq))
 
         except Exception as e:
@@ -146,7 +148,7 @@ def main():
     parser.add_argument('--restore_step', default=0, type=int, help='Global step to restore from checkpoint.')
     parser.add_argument('--summary_interval', type=int, default=100,
                         help='Steps between running summary ops.')
-    parser.add_argument('--checkpoint_interval', type=int, default=100,
+    parser.add_argument('--checkpoint_interval', type=int, default=500,
                         help='Steps between writing checkpoints.')
     parser.add_argument('--slack_url', help='Slack webhook URL to get periodic reports.')
     parser.add_argument('--tf_log_level', type=int, default=1, help='Tensorflow C++ log level.')
