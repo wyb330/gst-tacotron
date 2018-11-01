@@ -12,6 +12,7 @@ class TacoTestHelper(Helper):
             self._output_dim = hp.num_mels
             self._end_token = tf.tile([0.0], [self._output_dim * hp.outputs_per_step])
             self._hp = hp
+            self._reduction_factor = hp.outputs_per_step
 
     @property
     def batch_size(self):
@@ -24,6 +25,10 @@ class TacoTestHelper(Helper):
     @property
     def sample_ids_dtype(self):
         return np.int32
+
+    @property
+    def token_output_size(self):
+        return self._reduction_factor
 
     def initialize(self, name=None):
         return (tf.tile([False], [self._batch_size]), _go_frames(self._batch_size, self._hp.prenet_depths[-1]))

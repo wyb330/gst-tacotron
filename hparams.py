@@ -64,6 +64,57 @@ hparams = tf.contrib.training.HParams(
     symmetric_mels=True,  # Whether to scale the data to be symmetric around 0
     max_abs_value=4.,  # max absolute value of data. If symmetric, data will be [-max, max] else [0, max]
 
+    tacotron_zoneout_rate=0.1,  # zoneout rate for all LSTM cells in the network
+    tacotron_dropout_rate=0.5,  # dropout rate for all convolutional layers + prenet
+
+    prenet_layers=[256, 256],  # number of layers and number of units of prenet
+    decoder_layers=2,  # number of decoder lstm layers
+    decoder_lstm_units=1024,  # number of decoder lstm units on each layer
+
+    postnet_num_layers=5,  # number of postnet convolutional layers
+    postnet_kernel_size=(5,),  # size of postnet convolution filters for each layer
+    postnet_channels=512,  # number of postnet convolution filters for each layer
+
+    enc_conv_num_layers=3,  # number of encoder convolutional layers
+    enc_conv_kernel_size=(5,),  # size of encoder convolution filters for each layer
+    enc_conv_channels=512,  # number of encoder convolutions filters for each layer
+    encoder_lstm_units=256,  # number of lstm units for each direction (forward and backward)
+
+    # Decoder RNN learning can take be done in one of two ways:
+    #	Teacher Forcing: vanilla teacher forcing (usually with ratio = 1). mode='constant'
+    #	Curriculum Learning Scheme: From Teacher-Forcing to sampling from previous outputs is function of global step. (teacher forcing ratio decay) mode='scheduled'
+    # The second approach is inspired by:
+    # Bengio et al. 2015: Scheduled Sampling for Sequence Prediction with Recurrent Neural Networks.
+    # Can be found under: https://arxiv.org/pdf/1506.03099.pdf
+    tacotron_teacher_forcing_mode='constant',
+    # Can be ('constant' or 'scheduled'). 'scheduled' mode applies a cosine teacher forcing ratio decay. (Preference: scheduled)
+    tacotron_teacher_forcing_ratio=1.,
+    # Value from [0., 1.], 0.=0%, 1.=100%, determines the % of times we force next decoder inputs, Only relevant if mode='constant'
+    tacotron_teacher_forcing_init_ratio=1.,  # initial teacher forcing ratio. Relevant if mode='scheduled'
+    tacotron_teacher_forcing_final_ratio=0.,  # final teacher forcing ratio. Relevant if mode='scheduled'
+    tacotron_teacher_forcing_start_decay=10000,
+    # starting point of teacher forcing ratio decay. Relevant if mode='scheduled'
+    tacotron_teacher_forcing_decay_steps=280000,
+    # Determines the teacher forcing ratio decay slope. Relevant if mode='scheduled'
+    tacotron_teacher_forcing_decay_alpha=0.,  # teacher forcing ratio decay rate. Relevant if mode='scheduled'
+    ###########################################################################################################################################
+    attention_filters=32,  # number of attention convolution filters
+    attention_kernel=(31,),  # kernel size of attention convolution
+    cumulative_weights=True,
+    tacotron_reg_weight=1e-6,  # regularization weight (for L2 regularization)
+    tacotron_scale_regularization=True,
+
+    tacotron_decay_learning_rate=True,  # boolean, determines if the learning rate will follow an exponential decay
+    tacotron_start_decay=50000,  # Step at which learning decay starts
+    tacotron_decay_steps=40000,  # Determines the learning rate decay slope (UNDER TEST)
+    tacotron_decay_rate=0.2,  # learning rate decay rate (UNDER TEST)
+    tacotron_initial_learning_rate=1e-3,  # starting learning rate
+    tacotron_final_learning_rate=1e-5,  # minimal learning rate
+
+    tacotron_adam_beta1=0.9,  # AdamOptimizer beta1 parameter
+    tacotron_adam_beta2=0.999,  # AdamOptimizer beta2 parameter
+    tacotron_adam_epsilon=1e-6,  # AdamOptimizer beta3 parameter
+
 )
 
 

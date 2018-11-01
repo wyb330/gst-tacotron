@@ -136,3 +136,5 @@ def conv2d(inputs, filters, kernel_size, strides, activation, is_training, scope
         if activation is not None:
             conv2d_output = activation(conv2d_output)
         return conv2d_output
+
+
