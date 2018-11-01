@@ -36,6 +36,17 @@ def inv_spectrogram(spectrogram):
     return inv_preemphasis(_griffin_lim(S ** hparams.power))  # Reconstruct phase
 
 
+def inv_linear_spectrogram(linear_spectrogram):
+    '''Converts linear spectrogram to waveform using librosa'''
+    if hparams.signal_normalization:
+        D = _denormalize(linear_spectrogram)
+    else:
+        D = linear_spectrogram
+
+    S = _db_to_amp(D + hparams.ref_level_db)  # Convert back to linear
+    return _griffin_lim(S ** hparams.power)
+
+
 def inv_spectrogram_tensorflow(spectrogram):
     '''Builds computational graph to convert spectrogram to waveform using TensorFlow.
 
@@ -98,8 +109,9 @@ def _stft(y):
 
 
 def _istft(y):
-    _, hop_length, win_length = _stft_parameters()
-    return librosa.istft(y, hop_length=hop_length, win_length=win_length)
+    # _, hop_length, win_length = _stft_parameters()
+    # return librosa.istft(y, hop_length=hop_length, win_length=win_length)
+    return librosa.istft(y, hop_length=get_hop_size(hparams), win_length=hparams.win_size)
 
 
 def _stft_tensorflow(signals):

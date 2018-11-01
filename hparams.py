@@ -43,7 +43,7 @@ hparams = tf.contrib.training.HParams(
     # Eval:
     max_iters=1000,
     griffin_lim_iters=60,
-    power=1.5,  # Power to raise magnitudes to prior to Griffin-Lim
+    power=1.2,  # Power to raise magnitudes to prior to Griffin-Lim
 
     # Global style token
     use_gst=True,
@@ -114,6 +114,8 @@ hparams = tf.contrib.training.HParams(
     tacotron_adam_beta1=0.9,  # AdamOptimizer beta1 parameter
     tacotron_adam_beta2=0.999,  # AdamOptimizer beta2 parameter
     tacotron_adam_epsilon=1e-6,  # AdamOptimizer beta3 parameter
+    # number of frames to generate at each decoding step (speeds up computation and allows for higher batch size)
+    stop_at_any=True,
 
 )
 

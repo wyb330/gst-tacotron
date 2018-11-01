@@ -62,7 +62,11 @@ def train(log_dir, args):
     global_step = tf.Variable(0, name='global_step', trainable=False)
     with tf.variable_scope('model') as scope:
         model = create_model(args.model, hparams)
-        model.initialize(feeder.inputs, feeder.input_lengths, feeder.mel_targets, feeder.linear_targets)
+        if args.model == 'tacotron2':
+            model.initialize(feeder.inputs, feeder.input_lengths, feeder.mel_targets, feeder.linear_targets,
+                             global_step=global_step)
+        else:
+            model.initialize(feeder.inputs, feeder.input_lengths, feeder.mel_targets, feeder.linear_targets)
         model.add_loss()
         model.add_optimizer(global_step)
         stats = add_stats(model)
@@ -115,7 +119,10 @@ def train(log_dir, args):
                     log('Saving audio and alignment...')
                     input_seq, spectrogram, alignment = sess.run([
                         model.inputs[0], model.linear_outputs[0], model.alignments[0]])
-                    waveform = audio.inv_spectrogram(spectrogram.T)
+                    if args.model == 'tacotron2':
+                        waveform = audio.inv_linear_spectrogram(spectrogram.T)
+                    else:
+                        waveform = audio.inv_spectrogram(spectrogram.T)
                     audio.save_wav(waveform, os.path.join(log_dir, 'step-%d-audio.wav' % step))
                     plot.plot_alignment(alignment, os.path.join(log_dir, 'step-%d-align.png' % step),
                                         info='%s, %s, %s, step=%d, loss=%.5f' % (
@@ -132,14 +139,14 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default=os.getcwd())
     parser.add_argument('--input', default='training/train.txt')
-    parser.add_argument('--model', default='tacotron')
+    parser.add_argument('--model', default='tacotron2')
     parser.add_argument('--name', help='Name of the run. Used for logging. Defaults to model name.')
     parser.add_argument('--hparams', default='',
                         help='Hyperparameter overrides as a comma-separated list of name=value pairs')
     parser.add_argument('--restore_step', default=0, type=int, help='Global step to restore from checkpoint.')
     parser.add_argument('--summary_interval', type=int, default=100,
                         help='Steps between running summary ops.')
-    parser.add_argument('--checkpoint_interval', type=int, default=1000,
+    parser.add_argument('--checkpoint_interval', type=int, default=100,
                         help='Steps between writing checkpoints.')
     parser.add_argument('--slack_url', help='Slack webhook URL to get periodic reports.')
     parser.add_argument('--tf_log_level', type=int, default=1, help='Tensorflow C++ log level.')

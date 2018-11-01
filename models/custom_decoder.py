@@ -6,9 +6,8 @@ from tensorflow.contrib.seq2seq.python.ops import helper as helper_py
 from tensorflow.python.framework import ops
 from tensorflow.python.framework import tensor_shape
 from tensorflow.python.layers import base as layers_base
-from tensorflow.python.ops import rnn_cell_impl
 from tensorflow.python.util import nest
-from models.helpers import TacoTrainingHelper, TacoTestHelper
+from models.helpers2 import TacoTrainingHelper, TacoTestHelper
 
 
 class CustomDecoderOutput(
@@ -121,17 +120,12 @@ class CustomDecoder(decoder.Decoder):
             sample_ids = self._helper.sample(
                 time=time, outputs=cell_outputs, state=cell_state)
 
-            # (finished, next_inputs, next_state) = self._helper.next_inputs(
-            #     time=time,
-            #     outputs=cell_outputs,
-            #     state=cell_state,
-            #     sample_ids=sample_ids,
-            #     stop_token_prediction=stop_token)
             (finished, next_inputs, next_state) = self._helper.next_inputs(
                 time=time,
                 outputs=cell_outputs,
                 state=cell_state,
-                sample_ids=sample_ids)
+                sample_ids=sample_ids,
+                stop_token_prediction=stop_token)
 
         outputs = CustomDecoderOutput(cell_outputs, stop_token, sample_ids)
         return (outputs, next_state, next_inputs, finished)
