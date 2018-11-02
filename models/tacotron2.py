@@ -200,6 +200,7 @@ class Tacotron2():
             self.linear_outputs = linear_outputs
             self.linear_targets = linear_targets
             self.mel_targets = mel_targets
+            self.reference_mel = reference_mel
             log('Initialized Tacotron model. Dimensions (? = dynamic shape): ')
             log('  Train mode:               {}'.format(is_training))
             log('  embedding:                {}'.format(embedded_inputs.shape))

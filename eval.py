@@ -23,7 +23,7 @@ def run_eval(args):
         is_teacher_force = True
         mel_targets = np.load(args.mel_targets)
     synth = Synthesizer(teacher_forcing_generating=is_teacher_force)
-    synth.load(args.checkpoint, args.reference_audio)
+    synth.load(args.checkpoint, args.reference_audio, model_name=args.model)
     base_path = get_output_base_path(args.checkpoint)
 
     if args.reference_audio is not None:
@@ -55,6 +55,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--checkpoint', required=True, help='Path to model checkpoint')
     parser.add_argument('--text', required=True, default=None, help='Single test text sentence')
+    parser.add_argument('--model', default='tacotron2')
     parser.add_argument('--hparams', default='',
                         help='Hyperparameter overrides as a comma-separated list of name=value pairs')
     parser.add_argument('--reference_audio', default=None, help='Reference audio path')
