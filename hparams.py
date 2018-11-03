@@ -1,5 +1,7 @@
 import tensorflow as tf
 
+_SCALE = 2
+
 # Default hyperparameters:
 hparams = tf.contrib.training.HParams(
     # Comma-separated list of cleaners to run on text prior to training and eval. For non-English
@@ -24,13 +26,13 @@ hparams = tf.contrib.training.HParams(
 
     # Model:
     outputs_per_step=2,
-    embed_depth=256,
-    prenet_depths=[256, 128],
-    encoder_depth=256,
-    rnn_depth=256,
+    embed_depth=128 * _SCALE,
+    prenet_depths=[128 * _SCALE, 128],
+    encoder_depth=128 * _SCALE,
+    rnn_depth=128 * _SCALE,
 
     # Attention
-    attention_depth=256,
+    attention_depth=128 * _SCALE,
 
     # Training:
     batch_size=32,
@@ -50,7 +52,7 @@ hparams = tf.contrib.training.HParams(
     # When false, the scripit will do as the paper  "Towards End-to-End Prosody Transfer for Expressive Speech Synthesis with Tacotron"
     num_gst=10,
     num_heads=4,  # Head number for multi-head attention
-    style_embed_depth=256,
+    style_embed_depth=128 * _SCALE,
     reference_filters=[32, 32, 64, 64, 128, 128],
     reference_depth=128,
     style_att_type="mlp_attention",  # Attention type for style attention module (dot_attention, mlp_attention)
@@ -67,18 +69,18 @@ hparams = tf.contrib.training.HParams(
     tacotron_zoneout_rate=0.1,  # zoneout rate for all LSTM cells in the network
     tacotron_dropout_rate=0.5,  # dropout rate for all convolutional layers + prenet
 
-    prenet_layers=[256, 256],  # number of layers and number of units of prenet
+    prenet_layers=[128 * _SCALE, 128 * _SCALE],  # number of layers and number of units of prenet
     decoder_layers=2,  # number of decoder lstm layers
-    decoder_lstm_units=1024,  # number of decoder lstm units on each layer
+    decoder_lstm_units=512 * _SCALE,  # number of decoder lstm units on each layer
 
     postnet_num_layers=5,  # number of postnet convolutional layers
     postnet_kernel_size=(5,),  # size of postnet convolution filters for each layer
-    postnet_channels=512,  # number of postnet convolution filters for each layer
+    postnet_channels=256 * _SCALE,  # number of postnet convolution filters for each layer
 
     enc_conv_num_layers=3,  # number of encoder convolutional layers
     enc_conv_kernel_size=(5,),  # size of encoder convolution filters for each layer
-    enc_conv_channels=512,  # number of encoder convolutions filters for each layer
-    encoder_lstm_units=256,  # number of lstm units for each direction (forward and backward)
+    enc_conv_channels=256 * _SCALE,  # number of encoder convolutions filters for each layer
+    encoder_lstm_units=128 * _SCALE,  # number of lstm units for each direction (forward and backward)
 
     # Decoder RNN learning can take be done in one of two ways:
     #	Teacher Forcing: vanilla teacher forcing (usually with ratio = 1). mode='constant'

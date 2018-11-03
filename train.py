@@ -31,7 +31,7 @@ def add_stats(model):
         tf.summary.histogram('mel_outputs', model.mel_outputs)
         tf.summary.histogram('mel_targets', model.mel_targets)
         tf.summary.scalar('loss_mel', model.mel_loss)
-        # tf.summary.scalar('loss_linear', model.linear_loss)
+        tf.summary.scalar('loss_linear', model.linear_loss)
         tf.summary.scalar('learning_rate', model.learning_rate)
         tf.summary.scalar('loss', model.loss)
         # gradient_norms = [tf.norm(grad) for grad in model.gradients]

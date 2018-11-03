@@ -188,8 +188,6 @@ class Tacotron2():
             # Grab alignments from the final decoder state
             alignments = tf.transpose(final_decoder_state.alignment_history.stack(), [1, 2, 0])
 
-            if is_training:
-                self.ratio = self.helper._ratio
             self.inputs = inputs
             self.input_lengths = input_lengths
             self.decoder_output = decoder_output
@@ -227,6 +225,13 @@ class Tacotron2():
             #     labels=self.stop_token_targets,
             #     logits=self.stop_token_prediction))
 
+            # Compute linear loss
+            # From https://github.com/keithito/tacotron/blob/tacotron2-work-in-progress/models/tacotron.py
+            # Prioritize loss for frequencies under 2000 Hz.
+            l1 = tf.abs(self.linear_targets - self.linear_outputs)
+            n_priority_freq = int(2000 / (hp.sample_rate * 0.5) * hp.num_mels)
+            linear_loss = 0.5 * tf.reduce_mean(l1) + 0.5 * tf.reduce_mean(l1[:, :, 0:n_priority_freq])
+
             # Compute the regularization weight
             if hp.tacotron_scale_regularization:
                 reg_weight_scaler = 1. / (2 * hp.max_abs_value) if hp.symmetric_mels else 1. / (hp.max_abs_value)
@@ -242,10 +247,11 @@ class Tacotron2():
             # Compute final loss term
             self.before_loss = before
             self.mel_loss = after
+            self.linear_loss = linear_loss
             # self.stop_token_loss = stop_token_loss
             self.regularization_loss = regularization
 
-            self.loss = self.before_loss + self.mel_loss + self.regularization_loss
+            self.loss = self.before_loss + self.mel_loss + self.linear_loss + self.regularization_loss
 
     def add_optimizer(self, global_step):
         '''Adds optimizer. Sets "gradients" and "optimize" fields. add_loss must have been called.
