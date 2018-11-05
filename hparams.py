@@ -6,7 +6,7 @@ _SCALE = 2
 hparams = tf.contrib.training.HParams(
     # Comma-separated list of cleaners to run on text prior to training and eval. For non-English
     # text, you may want to use "basic_cleaners" or "transliteration_cleaners" See TRAINING_DATA.md.
-    cleaners='english_cleaners',
+    cleaners='transliteration_cleaners',
 
     # Audio:
     num_mels=80,
@@ -107,9 +107,9 @@ hparams = tf.contrib.training.HParams(
     tacotron_scale_regularization=True,
 
     tacotron_decay_learning_rate=True,  # boolean, determines if the learning rate will follow an exponential decay
-    tacotron_start_decay=50000,  # Step at which learning decay starts
-    tacotron_decay_steps=40000,  # Determines the learning rate decay slope (UNDER TEST)
-    tacotron_decay_rate=0.2,  # learning rate decay rate (UNDER TEST)
+    tacotron_start_decay=5000,  # Step at which learning decay starts
+    tacotron_decay_steps=2000,  # Determines the learning rate decay slope (UNDER TEST)
+    tacotron_decay_rate=0.1,  # learning rate decay rate (UNDER TEST)
     tacotron_initial_learning_rate=1e-3,  # starting learning rate
     tacotron_final_learning_rate=1e-5,  # minimal learning rate
 

@@ -90,8 +90,8 @@ def _process_utterance(out_dir, index, wav_path, text, hparams):
     # time_steps = len(out)
 
     # Write the spectrogram and audio to disk
-    audio_filename = 'speech-audio-{:05d}.npy'.format(index)
-    mel_filename = 'speech-mel-{:05d}.npy'.format(index)
+    audio_filename = 'vctk-audio-{:05d}.npy'.format(index)
+    mel_filename = 'vctk-mel-{:05d}.npy'.format(index)
     # np.save(os.path.join(out_dir, audio_filename), out.astype(out_dtype), allow_pickle=False)
     np.save(os.path.join(out_dir, audio_filename), linear_spectrogram.T, allow_pickle=False)
     np.save(os.path.join(out_dir, mel_filename), mel_spectrogram.T, allow_pickle=False)
