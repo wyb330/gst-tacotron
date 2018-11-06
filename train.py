@@ -141,7 +141,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default=os.getcwd())
     parser.add_argument('--input', default='training/train.txt')
-    parser.add_argument('--model', default='tacotron')
+    parser.add_argument('--model', default='tacotron2')
     parser.add_argument('--name', help='Name of the run. Used for logging. Defaults to model name.')
     parser.add_argument('--hparams', default='',
                         help='Hyperparameter overrides as a comma-separated list of name=value pairs')
