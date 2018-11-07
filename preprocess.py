@@ -2,7 +2,7 @@ import argparse
 import os
 from multiprocessing import cpu_count
 from tqdm import tqdm
-from datasets import blizzard, ljspeech, blizzard2013, vctk, zeroth
+from datasets import blizzard, ljspeech, blizzard2013, vctk, zeroth, seoul
 from hparams import hparams
 
 
@@ -46,6 +46,14 @@ def preprocess_zeroth(args):
     write_metadata(metadata, out_dir)
 
 
+def preprocess_seoul(args):
+    in_dir = os.path.join(args.base_dir, 'seoul/clean')
+    out_dir = os.path.join(args.base_dir, args.output)
+    os.makedirs(out_dir, exist_ok=True)
+    metadata = seoul.build_from_path(hparams, in_dir, out_dir, args.num_workers, tqdm=tqdm)
+    write_metadata(metadata, out_dir)
+
+
 def write_metadata(metadata, out_dir):
     with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
         for m in metadata:
@@ -62,7 +70,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--base_dir', default=os.getcwd())
     parser.add_argument('--output', default='training')
-    parser.add_argument('--dataset', required=True, choices=['blizzard', 'ljspeech', 'blizzard2013', 'vctk', 'zeroth'])
+    parser.add_argument('--dataset', required=True, choices=['blizzard', 'ljspeech', 'blizzard2013', 'vctk', 'zeroth', 'seoul'])
     parser.add_argument('--num_workers', type=int, default=cpu_count())
     args = parser.parse_args()
     if args.dataset == 'blizzard':
@@ -75,6 +83,8 @@ def main():
         preprocess_vctk(args)
     elif args.dataset == 'zeroth':
         preprocess_zeroth(args)
+    elif args.dataset == 'seoul':
+        preprocess_seoul(args)
 
 
 if __name__ == "__main__":

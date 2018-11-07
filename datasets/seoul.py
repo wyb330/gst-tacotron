@@ -2,7 +2,6 @@
 # https://github.com/goodatlas/zeroth
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
-import glob
 import numpy as np
 import os
 import re
@@ -15,18 +14,18 @@ _speaker_re = re.compile(r'p([0-9]+)_')
 
 
 def build_from_path(hparams, input_dirs, out_dir, n_jobs=8, tqdm=lambda x: x):
-    dir_list = os.listdir('%s/train_data_01/003' % input_dirs)
+    dir_list = os.listdir(input_dirs)
     executor = ProcessPoolExecutor(max_workers=n_jobs)
     futures = []
     index = 1
+    text_file = os.path.join(input_dirs, 'trans.txt')
     for d in dir_list:
-        path = os.path.join('%s/train_data_01/003' % input_dirs, d)
-        text_file = glob.glob('{}/*.txt'.format(path))
-        if os.path.isfile(text_file[0]):
-            with open(text_file[0], 'r', encoding='utf8') as f:
+        path = os.path.join(input_dirs, d)
+        if os.path.isfile(text_file):
+            with open(text_file, 'r', encoding='utf8') as f:
                 for line in f:
                     parts = line.strip().split()
-                    wav = os.path.join(path, '%s.flac' % parts[0])
+                    wav = os.path.join(path, '%s_%s.wav' % (d, parts[0]))
                     text = ' '.join(parts[1:])
                     futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav, text)))
                     index += 1

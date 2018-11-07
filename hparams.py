@@ -35,7 +35,7 @@ hparams = tf.contrib.training.HParams(
     attention_depth=128 * _SCALE,
 
     # Training:
-    batch_size=8,
+    batch_size=16,
     adam_beta1=0.9,
     adam_beta2=0.999,
     initial_learning_rate=0.002,
