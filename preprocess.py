@@ -59,7 +59,7 @@ def write_metadata(metadata, out_dir):
         for m in metadata:
             if m is not None:
                 f.write('|'.join([str(x) for x in m]) + '\n')
-    frames = sum([m[2] for m in metadata])
+    frames = sum([m[2] for m in metadata if m is not None])
     hours = frames * hparams.frame_shift_ms / (3600 * 1000)
     print('Wrote %d utterances, %d frames (%.2f hours)' % (len(metadata), frames, hours))
     print('Max input length:  %d' % max(len(m[3]) for m in metadata))

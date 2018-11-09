@@ -26,13 +26,14 @@ def build_from_path(hparams, input_dirs, out_dir, n_jobs=8, tqdm=lambda x: x):
                 for line in f:
                     parts = line.strip().split()
                     wav = os.path.join(path, '%s_%s.wav' % (d, parts[0]))
-                    text = ' '.join(parts[1:])
-                    futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav, text)))
-                    index += 1
+                    if os.path.exists(wav):
+                        text = ' '.join(parts[1:])
+                        futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav, text, hparams)))
+                        index += 1
     return [future.result() for future in tqdm(futures)]
 
 
-def _process_utterance(out_dir, index, wav_path, text):
+def _process_utterance(out_dir, index, wav_path, text, hparams):
     '''Preprocesses a single utterance audio/text pair.
 
     This writes the mel and linear scale spectrograms to disk and returns a tuple to write
@@ -57,10 +58,14 @@ def _process_utterance(out_dir, index, wav_path, text):
 
     # Compute a mel-scale spectrogram from the wav:
     mel_spectrogram = audio.melspectrogram(wav).astype(np.float32)
+    mel_frames = mel_spectrogram.shape[1]
+
+    if mel_frames > hparams.max_mel_frames and hparams.clip_mels_length:
+        return None
 
     # Write the spectrograms to disk:
-    spectrogram_filename = 'zeroth-spec-%05d.npy' % index
-    mel_filename = 'zzeroth-mel-%05d.npy' % index
+    spectrogram_filename = 'seoul-spec-%05d.npy' % index
+    mel_filename = 'seoul-mel-%05d.npy' % index
     np.save(os.path.join(out_dir, spectrogram_filename), spectrogram.T, allow_pickle=False)
     np.save(os.path.join(out_dir, mel_filename), mel_spectrogram.T, allow_pickle=False)
 

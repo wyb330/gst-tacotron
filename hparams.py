@@ -16,7 +16,7 @@ hparams = tf.contrib.training.HParams(
     preemphasis=0.97,
     min_level_db=-100,
     ref_level_db=20,
-    clip_mels_length=False,  # For cases of OOM (Not really recommended, working on a workaround)
+    clip_mels_length=True,  # For cases of OOM (Not really recommended, working on a workaround)
 
     # Mel spectrogram
     n_fft=1024,  # Extra window size is filled with 0 paddings to match this parameter
@@ -59,7 +59,7 @@ hparams = tf.contrib.training.HParams(
     style_att_dim=128,
 
     input_type="raw",
-    max_mel_frames=900,  # Only relevant when clip_mels_length = True
+    max_mel_frames=1800,  # Only relevant when clip_mels_length = True
     # Mel and Linear spectrograms normalization/scaling and clipping
     signal_normalization=True,
     allow_clipping_in_normalization=True,  # Only relevant if mel_normalization = True
