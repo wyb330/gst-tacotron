@@ -1,35 +1,41 @@
-# Korean voice dataset(Kaldi-based Korean ASR open-source project)
-# https://github.com/goodatlas/zeroth
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
-import glob
 import numpy as np
 import os
-import re
 from util import audio
-import librosa
-
-_min_samples = 2000
-_threshold_db = 25
-_speaker_re = re.compile(r'p([0-9]+)_')
+import json
 
 
-def build_from_path(hparams, input_dirs, out_dir, n_jobs=8, tqdm=lambda x: x):
-    dir_list = os.listdir('%s/train_data_01/003' % input_dirs)
+def is_json(file):
+    if file.endswith('.json'):
+        return True
+    else:
+        return False
+
+
+def build_from_path(input_dirs, out_dir, text_file, n_jobs=8, tqdm=lambda x: x):
     executor = ProcessPoolExecutor(max_workers=n_jobs)
     futures = []
     index = 1
-    for d in dir_list:
-        path = os.path.join('%s/train_data_01/003' % input_dirs, d)
-        text_file = glob.glob('{}/*.txt'.format(path))
-        if os.path.isfile(text_file[0]):
-            with open(text_file[0], 'r', encoding='utf8') as f:
+    file = os.path.join(input_dirs, text_file)
+    if os.path.exists(file):
+        with open(file, 'r', encoding='utf8') as f:
+            if is_json(text_file):
+                info = json.load(f)
+                for wav_path, text in info.items():
+                    wav = wav_path
+                    futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav, text)))
+                    index += 1
+            else:
                 for line in f:
                     parts = line.strip().split()
-                    wav = os.path.join(path, '%s.flac' % parts[0])
+                    wav = parts[0]
                     text = ' '.join(parts[1:])
                     futures.append(executor.submit(partial(_process_utterance, out_dir, index, wav, text)))
                     index += 1
+    else:
+        raise Exception('Text file "{}" not exists.'.format(text_file))
+
     return [future.result() for future in tqdm(futures)]
 
 
@@ -50,7 +56,7 @@ def _process_utterance(out_dir, index, wav_path, text):
     '''
 
     # Load the audio to a numpy array:
-    wav = _trim_wav(audio.load_wav(wav_path))
+    wav = audio.load_wav(wav_path)
 
     # Compute the linear-scale spectrogram from the wav:
     spectrogram = audio.spectrogram(wav).astype(np.float32)
@@ -60,30 +66,11 @@ def _process_utterance(out_dir, index, wav_path, text):
     mel_spectrogram = audio.melspectrogram(wav).astype(np.float32)
 
     # Write the spectrograms to disk:
-    spectrogram_filename = 'zeroth-spec-%05d.npy' % index
-    mel_filename = 'zeroth-mel-%05d.npy' % index
+    spectrogram_filename = 'voice-spec-%05d.npy' % index
+    mel_filename = 'voice-mel-%05d.npy' % index
     np.save(os.path.join(out_dir, spectrogram_filename), spectrogram.T, allow_pickle=False)
     np.save(os.path.join(out_dir, mel_filename), mel_spectrogram.T, allow_pickle=False)
 
     # Return a tuple describing this training example:
     return (spectrogram_filename, mel_filename, n_frames, text)
 
-
-def _trim_wav(wav):
-    '''Trims silence from the ends of the wav'''
-    splits = librosa.effects.split(wav, _threshold_db, frame_length=1024, hop_length=512)
-    return wav[_find_start(splits):_find_end(splits, len(wav))]
-
-
-def _find_start(splits):
-    for split_start, split_end in splits:
-        if split_end - split_start > _min_samples:
-            return max(0, split_start - _min_samples)
-    return 0
-
-
-def _find_end(splits, num_samples):
-    for split_start, split_end in reversed(splits):
-        if split_end - split_start > _min_samples:
-            return min(num_samples, split_end + _min_samples)
-    return num_samples
